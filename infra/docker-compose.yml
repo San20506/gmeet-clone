@@ -1,0 +1,35 @@
+services:
+  livekit:
+    image: livekit/livekit-server:latest
+    restart: unless-stopped
+    ports:
+      - "7880:7880"   # HTTP
+      - "7881:7881"   # WebSocket
+      - "50000-60000:50000-60000/udp"  # WebRTC
+    volumes:
+      - ./livekit.yaml:/etc/livekit.yaml
+    command: --config /etc/livekit.yaml
+    depends_on:
+      redis:
+        condition: service_started
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: gmeet
+      POSTGRES_PASSWORD: gmeet
+      POSTGRES_DB: gmeet
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
